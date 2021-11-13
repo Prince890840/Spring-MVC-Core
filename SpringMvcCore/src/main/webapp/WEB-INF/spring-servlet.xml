@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+  
+	  
+	<context:component-scan base-package="springmvc" />
+	
+	<tx:annotation-driven/>
+	
+	<mvc:annotation-driven></mvc:annotation-driven>
+	<mvc:resources location="/WEB-INF/Resources/" mapping="/Resources/**"></mvc:resources>
+    
+   <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+   		 name="viewResolver">
+   		<property name="prefix" value="/WEB-INF/views/"></property>
+   		<property name="suffix" value=".jsp"></property>
+   </bean>
+   
+   <bean id="myDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    	<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
+    	<property name="url" value="jdbc:mysql://localhost:3306/myhibernate_schema?useTimezone = true"></property>
+    	<property name="username" value="root"></property>
+    	<property name="password" value="root"></property>
+  </bean>
+   
+   <bean id="factory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+    
+    <!-- data Source -->
+    <property name="dataSource" ref="myDataSource"/>
+       
+    <!-- hibernate Properties -->
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</prop> 
+           	<!-- <prop key="hibernate.current_session_context_class">thread</prop> 
+            <prop key="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</prop>  -->
+            <prop key="hibernate.show_sql">true</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+            <prop key="hibernate.format_sql">true</prop>
+            <!-- <prop key="hibernate.connection.SetBigStringTryClob">true</prop>
+            <prop key="hibernate.jdbc.batch_size">0</prop>
+            <prop key="hibernate.jdbc.batch_size">0</prop> -->
+            
+        </props>
+    </property>
+    
+    <!-- annotated Classes -->
+    <property name="annotatedClasses">
+    	<list>
+    		<value>
+    			springmvc.pogo.User
+    		</value>
+    	</list>
+    </property>
+    
+  </bean>
+   
+   <bean class="org.springframework.orm.hibernate5.HibernateTemplate" 
+   name="hibernateTemplate">
+    	<property name="sessionFactory">
+    		<ref bean="factory"/>
+    	</property>
+    </bean>	 
+      
+<!--    You have to enable transactionManager with 
+		0.<tx:annotation-driven/> 
+		1.xmlns:tx="http://www.springframework.org/schema/tx"
+		2.http://www.springframework.org/schema/tx
+    	  http://www.springframework.org/schema/tx/spring-tx.xsd"-->
+    
+  <bean class="org.springframework.orm.hibernate5.HibernateTransactionManager"
+   name="transactionManager">
+  	<property name="sessionFactory" ref="factory"></property>
+  </bean>
+  
+<!--   Configure Multipart Resolver -->
+  
+  <bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+  		name="multipartResolver">
+  </bean>
+  
+  <mvc:interceptors>
+  	<mvc:interceptor>
+  		<mvc:mapping path="/Interceptor"/>
+  			<bean class="springmvc.controller.Interceptor"></bean>	
+  	</mvc:interceptor>
+  </mvc:interceptors>
+  
+</beans>
